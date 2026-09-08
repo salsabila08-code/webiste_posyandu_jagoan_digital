@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard Posyandu</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background-color: #f9f9f9; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
+    th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+    th { background-color: #007bff; color: white; }
+    .btn-logout { background: #dc3545; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+<script>
+  if(localStorage.getItem("isLoggedIn") !== "true") {
+    window.location.href = "index.html";
+  }
+</script>
+
+<div style="display: flex; justify-content: space-between; align-items: center;">
+  <h1>Dashboard Layanan Posyandu</h1>
+  <button class="btn-logout" onclick="logout()">Logout</button>
+</div>
+
+<h3>Data Layanan Terkini (Realtime dari Google Sheets)</h3>
+<table id="dataTable">
+  <thead>
+    <tr>
+      <th>Timestamp</th>
+      <th>Kode Barcode</th>
+      <th>Nama KK</th>
+      <th>Kategori</th>
+      <th>Nama Anggota</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td colspan="6">Memuat data...</td></tr>
+  </tbody>
+</table>
+
+<script>
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyREU-90NriqK0niItssRsceH65ZBPsgw1aRJuyv2OCcB1dXzpHtEG1lx07WCGyR7vq/exec";
+
+  async function loadData() {
+    try {
+      const response = await fetch(SCRIPT_URL);
+      const rows = await response.json();
+      let html = "";
+      
+      // Melewati baris header (index 0)
+      for(let i = 1; i < rows.length; i++) {
+        html += `<tr>
+          <td>${new Date(rows[i][0]).toLocaleString()}</td>
+          <td>${rows[i][1]}</td>
+          <td>${rows[i][2]}</td>
+          <td>${rows[i][3]}</td>
+          <td>${rows[i][4]}</td>
+          <td>${rows[i][5]}</td>
+        </tr>`;
+      }
+      
+      document.querySelector("#dataTable tbody").innerHTML = html || "<tr><td colspan='6'>Belum ada data.</td></tr>";
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  function logout() {
+    localStorage.removeItem("isLoggedIn");
+    window.location.href = "index.html";
+  }
+
+  loadData();
+</script>
+
+</body>
+</html>
